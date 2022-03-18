@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package v1beta1.repoconfig;
+
+import "common/v1beta1/common.proto";
+
+// FIXME(vito): Update Documentation
+
+// MergeButton contains settings related to the repository's merge button on
+// pull requests.
+message MergeButton {
+    // Allows merging pull requests by adding all commits from the head branch
+    // to the base branch with a merge commit.
+    bool allow_merge_commits = 1;
+
+    // Allows merging pull requests by combining all commits from the head
+    // branch into a single commit in the base branch.
+    bool allow_squash_merging = 2;
+
+    // Allows merging pull requests by adding all commits from the head branch
+    // onto the base branch individually.
+    bool allow_rebase_merging = 3;
+}
+
+// BranchProtection contains settings related to the repository's branch
+// protection rules.
+message BranchProtection {
+    // When set to true, all commits must be made to a non-protected branch
+    // and submitted via a pull request before they can be merged into the
+    // repository's base branch.
+    bool require_pull_request_before_merging = 1;
+
+    // When set to true, pull requests targeting the base branch require a
+    // number of approvals and no changes required before they can be merged.
+    bool require_approvals = 2;
+
+    // Defines the amount of approvals required before a pull request can be
+    // merged into the base branch.
+    uint32 required_number_of_approvals = 3;
+
+    // When set to true, new reviewable commits pushed to a PR to the base
+    // branch will dismiss pull request review approvals.
+    bool dismiss_stale_pull_request_approvals_on_push = 4;
+
+    // When set to true, requires an approved review in pull requests including
+    // files with a designated code owner.
+    bool require_code_owners_review = 5;
+}
+
+// GitHubRepositoryConfig represents GitHub configurations for a given
+// repository
+message GitHubRepositoryConfig {
+
+    // MergeButton contains settings related to the repository's merge button on
+    // pull requests.
+    MergeButton merge_button = 1;
+
+    // BranchProtection contains settings related to the repository's branch
+    // protection rules.
+    BranchProtection branch_protection = 2;
+
+    // When set to true, branches used by pull requests are automatically
+    // deleted when they are merged.
+    bool automatically_delete_head_branches = 3;
+
+    // When set to true, commits must first be pushed to another branch, then
+    // merged or pushed directly to a branch running tests before being merged
+    // into the base branch.
+    bool require_status_checks = 4;
+
+    // When set to true, requires all pull request branches to be up-to-date
+    // against the base branch, ensuring tests are executed against the latest
+    // code.
+    bool require_branches_to_be_updated = 5;
+
+    // When set to true, all conversations on code must be resolved before a
+    // pull request can be merged into the base branch.
+    bool require_conversation_resolution = 6;
+
+    // When set to true, merge commits are prevented from being pushed to the
+    // base branch through PRs.
+    bool require_linear_history = 7;
+
+    // When set to true, automatically create updates to Code Owners files when
+    // people ingress or leaves the team responsible for this repository.
+    bool automatically_update_code_owners = 8;
+}
+
+enum CodacyCheck {
+    brakeman = 0;
+    checkov = 1;
+    checkstyle = 2;
+    cppcheck = 3;
+    eslint = 4;
+    flawfinder = 5;
+    jshint = 6;
+    jackson_linter = 7;
+    pmd = 8;
+    rubocop = 9;
+    shellcheck = 10;
+    spectral = 11;
+    swift_lint = 12;
+    bundler_audit = 13;
+    markdownlint = 14;
+    remark_lint = 15;
+    tailor = 16;
+}
+
+// CodacyConfig represents the current Codacy configuration for the current
+// repository.
+message CodacyConfig {
+    // Contains a list of enabled checks for the current repository.
+    repeated CodacyCheck enabled_checks = 1;
+}
+
+// GetRepoConfigRequest represents a generic request to obtain a given
+// repository's configuration parameters.
+message GetRepoConfigRequest {
+    v1beta1.common.OpaqueSession session = 1;
+    string repository_name = 2;
+}
+
+// GetGitHubRepoConfigResponse represents a response containing GitHub settings
+// for a given repository.
+message GetGitHubRepoConfigResponse {
+    GitHubRepositoryConfig config = 1;
+}
+
+// SetGitHubRepoConfigRequest represents a request to set GitHub repository
+// preferences on a given repository.
+message SetGitHubRepoConfigRequest {
+    v1beta1.common.OpaqueSession session = 1;
+    string repository_name = 2;
+    GitHubRepositoryConfig config = 3;
+}
+
+// SetCodacyRepoConfigRequest represents a request to set Codacy's preferences
+// on a given repository.
+message SetCodacyRepoConfigRequest {
+    v1beta1.common.OpaqueSession session = 1;
+    string repository_name = 2;
+    CodacyConfig config = 3;
+}
+
+// GetCodacyConfigResponse represents a response containing Codacy settings for
+// a given repository.
+message GetCodacyConfigResponse {
+    CodacyConfig config = 1;
+}
+
+service RepoConfig {
+    // GetGitHubRepoConfig gets GitHub configuration parameters for a given
+    // repository. The requesting user must have a Maintainer or Leader role on
+    // the repository's parent team in order for this method to succeed.
+    rpc GetGitHubRepoConfig (GetRepoConfigRequest) returns (GetGitHubRepoConfigResponse);
+
+    // SetGitHubRepoConfig set GitHub configuration parameters for a given
+    // repository. The requesting user must have a Maintainer or Leader role on
+    // the repository's parent team in order for this method to succeed.
+    rpc SetGitHubRepoConfig (SetGitHubRepoConfigRequest) returns (v1beta1.common.GenericBooleanResponse);
+
+    // GetCodacyRepoConfig gets Codacy configuration parameters for a given
+    // repository. The requesting user must have a Maintainer or Leader role on
+    // the repository's parent team in order for this method to succeed.
+    rpc GetCodacyRepoConfig (GetRepoConfigRequest) returns (GetCodacyConfigResponse);
+
+    // SetCodacyRepoConfig set Codacy configuration parameters for a given
+    // repository. The requesting user must have a Maintainer or Leader role on
+    // the repository's parent team in order for this method to succeed.
+    rpc SetCodacyRepoConfig (SetCodacyRepoConfigRequest) returns (v1beta1.common.GenericBooleanResponse);
+}

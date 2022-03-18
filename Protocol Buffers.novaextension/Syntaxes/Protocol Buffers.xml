@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<syntax name="proto">
+    <meta>
+        <name>Protocol Buffers</name>
+        <type>structured</type>
+        <preferred-file-extension>proto</preferred-file-extension>
+    </meta>
+
+    <detectors>
+        <extension priority="1.0">proto</extension>
+    </detectors>
+
+    <indentation>
+        <increase>
+            <expression>(\{[^}\"']*$)|(\[[^\]\"']*$)|(\([^)\"']*$)</expression>
+        </increase>
+        <decrease>
+            <expression>^\s*(\s*/\*.*\*/\s*)*[\}\]\)\\]</expression>
+        </decrease>
+    </indentation>
+
+    <comments>
+        <single>
+            <expression>//</expression>
+        </single>
+        <multiline>
+            <starts-with>
+                <expression>/*</expression>
+            </starts-with>
+            <ends-with>
+                <expression>*/</expression>
+            </ends-with>
+        </multiline>
+    </comments>
+
+    <brackets>
+        <pair open="{" close="}" />
+        <pair open="(" close=")" />
+    </brackets>
+
+    <surrounding-pairs>
+        <pair open="{" close="}" />
+        <pair open="[" close="]" />
+        <pair open="(" close=")" />
+        <pair open="&apos;" close="&apos;" />
+        <pair open="&quot;" close="&quot;" />
+    </surrounding-pairs>
+
+    <scopes>
+        <include syntax="self" collection="values" />
+        <include syntax="self" collection="comments" />
+        <include syntax="self" collection="imports" />
+        <include syntax="self" collection="package" />
+        <include syntax="self" collection="syntax" />
+        <include syntax="self" collection="definitions" />
+        <include syntax="self" collection="fields" />
+        <include syntax="self" collection="declarations" />
+        <include syntax="self" collection="identifiers" />
+        <include syntax="self" collection="keywords" />
+        <include syntax="self" collection="rpcs" />
+    </scopes>
+
+    <collections>
+        <collection name="comments">
+            <scope name="pb.comment.single" spell-check="true">
+                <expression>///?(.*)$</expression>
+                <capture number="1" name="pb.comment.content" />
+            </scope>
+            <scope name="pb.comment.block" spell-check="true">
+                <starts-with>
+                    <expression>/\*\*?</expression>
+                </starts-with>
+                <ends-with>
+                    <expression>\*/</expression>
+                </ends-with>
+            </scope>
+        </collection>
+
+        <collection name="imports">
+            <scope name="pb.import">
+                <starts-with>
+                    <expression>(import)\s+("[^"]+")</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.string" />
+                </starts-with>
+                <ends-with>
+                    <expression>$</expression>
+                </ends-with>
+            </scope>
+        </collection>
+
+        <collection name="package">
+            <scope name="pb.package">
+                <starts-with>
+                    <expression>\b(package)\s+([^;]+)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                </starts-with>
+                <ends-with>
+                    <expression>$</expression>
+                </ends-with>
+            </scope>
+        </collection>
+
+        <collection name="syntax">
+            <scope name="pb.syntax">
+                <starts-with>
+                    <expression>(syntax)\s+(=)\s+("[^"]+");</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.operator" />
+                    <capture number="3" name="pb.string" />
+                </starts-with>
+                <ends-with>
+                    <expression>$</expression>
+                </ends-with>
+            </scope>
+        </collection>
+
+        <collection name="strings">
+            <scope name="pb.string.singleline">
+                <expression>&quot;(?:[^&quot;\\]|\\.)*(?:&quot;|$)</expression>
+            </scope>
+        </collection>
+
+        <collection name="values">
+            <include syntax="self" collection="strings" />
+            <scope name="pb.value.boolean">
+                <strings>
+                    <string>true</string>
+                    <string>false</string>
+                </strings>
+            </scope>
+            <scope name="pb.value.number.hex">
+                <expression>\b0x[a-fA-F0-9]+\b</expression>
+            </scope>
+            <scope name="pb.value.number">
+                <expression>\b\-?(?:\d+(?:\.\d)?|(?:\.\d+))\b</expression>
+            </scope>
+        </collection>
+
+        <collection name="definitions">
+            <scope name="pb.definition.message">
+                <symbol type="message" />
+                <starts-with>
+                    <expression>\b(message)\s+([^\s]+)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.identifier.type.name" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?={)</expression>
+                    <capture number="0" name="pb.bracket" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="declarations" />
+                    <include syntax="self" collection="keywords" />
+                    <cut-off>
+                        <expression>(?=\b(?:message)\b)</expression>
+                    </cut-off>
+                </subscopes>
+            </scope>
+
+            <scope name="pb.definition.enum">
+                <symbol type="enum" />
+                <starts-with>
+                    <expression>\b(enum)\s+([^\s]+)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.identifier.type.name" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?={)</expression>
+                    <capture number="0" name="pb.bracket" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="declarations" />
+                    <include syntax="self" collection="enumvalues" />
+                </subscopes>
+            </scope>
+
+            <scope name="pb.definition.service">
+                <symbol type="service" />
+                <starts-with>
+                    <expression>\b(service)\s+([^\s]+)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.identifier.type.name" />
+                </starts-with>
+                <ends-with>
+                    <expression>(?={)</expression>
+                    <capture number="0" name="pb.bracket" />
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="rpcs" />
+                    <cut-off>
+                        <expression>(?=\b(?:message)\b)</expression>
+                    </cut-off>
+                </subscopes>
+            </scope>
+        </collection>
+
+        <collection name="fields">
+            <scope name="pb.definition.primitivefield">
+                <symbol type="primitivefield" />
+                <starts-with>
+                    <expression>\b((?:optional|repeated)\s+)?(double|float|(?:(?:[us]?int)|(s?fixed))(?:32|64)|bool|string|bytes)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.keyword" />
+                </starts-with>
+                <ends-with>
+                    <expression>;$</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="declarations" />
+                    <include syntax="self" collection="comments" />
+                    <include syntax="self" collection="identifiers" />
+                    <include syntax="self" collection="keywords" />
+                    <include syntax="self" collection="values" />
+                    <cut-off>
+                        <expression>(?=\b(?:message)\b)</expression>
+                    </cut-off>
+                </subscopes>
+            </scope>
+
+            <scope name="pb.definition.usertypefield">
+                <symbol type="usertypefield" />
+                <starts-with>
+                    <expression>\b((?:optional|repeated)\s+)?((?:[a-z][a-z0-9_]+\.)*[A-Z][a-zA-Z0-9_]+)\b</expression>
+                    <capture number="1" name="pb.keyword" />
+                    <capture number="2" name="pb.identifier.type.name" />
+                </starts-with>
+                <ends-with>
+                    <expression>;$</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="declarations" />
+                    <include syntax="self" collection="comments" />
+                    <include syntax="self" collection="identifiers" />
+                    <include syntax="self" collection="keywords" />
+                    <include syntax="self" collection="values" />
+                    <cut-off>
+                        <expression>(?=\b(?:message)\b)</expression>
+                    </cut-off>
+                </subscopes>
+            </scope>
+        </collection>
+
+        <collection name="enumvalues">
+            <scope name="pb.enum.field">
+                <symbol type="enumField" />
+                <starts-with>
+                    <expression>\b\s*([a-zA-Z][a-zA-Z_]+)\s+=\s+([0-9]+)\b</expression>
+                    <capture number="1" name="pb.identifier.type.name" />
+                </starts-with>
+                <ends-with>
+                    <expression>;$</expression>
+                </ends-with>
+                <subscopes>
+                    <include syntax="self" collection="values" />
+                </subscopes>
+            </scope>
+        </collection>
+
+        <collection name="rpcs">
+            <scope name="pb.rpc.method">
+                <symbol type="method" />
+                <starts-with>
+                    <expression>\b\s*(rpc)</expression>
+                    <capture number="1" name="pb.keyword" />
+                </starts-with>
+                <ends-with>
+                    <expression>;$</expression>
+                </ends-with>
+                <subscopes>
+                    <scope name="pb.rpc.method.name" required="true">
+                        <expression>\s+([A-Z][a-zA-Z0-9]+)</expression>
+                        <capture number="1" name="pb.identifier.method.name" />
+                    </scope>
+                    <scope name="pb.rpc.request_type">
+                        <starts-with>
+                            <expression>\(</expression>
+                            <capture number="0" name="pb.rpc.request_type.bracket" />
+                        </starts-with>
+                        <ends-with>
+                            <expression>\)</expression>
+                            <capture number="0" name="pb.rpc.request_type.bracket" />
+                        </ends-with>
+                        <subscopes anchored="true">
+                            <scope name="pb.rpc.request_type.type">
+                                <expression>\b(([a-zA-Z][a-zA-Z0-9]+\.)*[A-Za-z]+)\b</expression>
+                                <capture number="1" name="pb.identifier.type.name" />
+                            </scope>
+                        </subscopes>
+                    </scope>
+                    <scope name="pb.rpc.returns">
+                        <expression>\s+(returns)\s+</expression>
+                        <capture number="1" name="pb.keyword" />
+                        <subscopes>
+                            <scope name="pb.rpc.return_type">
+                                <starts-with>
+                                    <expression>\(</expression>
+                                    <capture number="0" name="pb.rpc.request_type.bracket" />
+                                </starts-with>
+                                <ends-with>
+                                    <expression>\)</expression>
+                                    <capture number="0" name="pb.rpc.request_type.bracket" />
+                                </ends-with>
+                                <subscopes anchored="true">
+                                    <scope name="pb.rpc.return_type.type">
+                                        <expression>\b(([a-zA-Z][a-zA-Z0-9]+\.)*[A-Za-z]+)\b</expression>
+                                        <capture number="1" name="pb.identifier.type.name" />
+                                    </scope>
+                                </subscopes>
+                            </scope>
+                        </subscopes>
+                    </scope>
+                </subscopes>
+            </scope>
+        </collection>
+
+        <collection name="keywords">
+            <scope name="pb.keyword">
+                <strings>
+                    <string>repeated</string>
+                    <string>optional</string>
+                </strings>
+            </scope>
+        </collection>
+    </collections>
+</syntax>

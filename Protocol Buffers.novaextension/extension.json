@@ -1,0 +1,9 @@
+{
+    "identifier": "io.vito.ProtocolBuffers",
+    "name": "Protocol Buffers",
+    "organization": "Victor Gama",
+    "description": "Basic Syntax Highlighting for Protocol Buffers",
+    "version": "1.0",
+    "categories": ["languages"],
+    "bugs": "https://github.com/heyvito/nova-protobufs"
+}

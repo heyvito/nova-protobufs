@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<completions>
+    <provider>
+        <selector>pb.identifier.keyword</selector>
+        <expression>\b[a-zA-Z0-9-_]*</expression>
+        <set>pb.keywords</set>
+    </provider>
+
+    <!-- Entities -->
+    <set name="pb.keywords">
+        <completion string="double" />
+        <completion string="float" />
+        <completion string="int32" />
+        <completion string="int64" />
+        <completion string="uint32" />
+        <completion string="uint64" />
+        <completion string="sint32" />
+        <completion string="sint64" />
+        <completion string="fixed32" />
+        <completion string="fixed64" />
+        <completion string="sfixed32" />
+        <completion string="sfixed64" />
+        <completion string="bool" />
+        <completion string="string" />
+        <completion string="bytes" />
+        <completion string="optional" />
+        <completion string="required" />
+        <completion string="rpc" />
+        <completion string="message" />
+        <completion string="enum" />
+    </set>
+</completions>
